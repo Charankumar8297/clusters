@@ -45,21 +45,24 @@ class clusterContollers{
 
   searchClusters = TryCatch(async (req, res) => {
     const {search,page = 1,limit = 6,sortBy = "createdAt",order = "desc",...filters} = req.query;
-    let query = {};
+    let query :any = {};
 
-    if (search) {
-      query.$or = [{ name: { $regex: search, $options: "i" } }];
-    }
-
+    
     if (filters.supportType) {
       query.supportType = filters.supportType;
     }
 
     console.log("stores", search);
 
+    if (search?.toString().trim()!=="") {
+      query.$or = [{ name: { $regex: search, $options: "i" } }];
+    }
+
+
     const skip = (Number(page) - 1) * Number(limit);
+    const sortKey = String(sortBy);
     const clusters = await Cluster.find(query)
-      .sort({ [sortBy]: order === "desc" ? -1 : 1 })
+      .sort({ [sortKey]: order === "desc" ? -1 : 1 })
       .skip(Number(skip))
       .limit(Number(limit));
     const total = await Cluster.countDocuments(query);
